@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      args:
+        user: dev
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: matlimaaa/testing-laravel-breeze
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    restart: unless-stopped
+    networks:
+      - lara-docker
+
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - 80:80
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/:/etc/nginx/conf.d/
+    networks:
+      - lara-docker
+
+  mysql:
+    image: mysql:5.7.22
+    restart: always
+    ports:
+      - 3307:3306
+    volumes:
+      - ./.docker/mysql:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - lara-docker
+
+networks:
+  lara-docker:
+    driver: bridge
